@@ -118,6 +118,13 @@ class VisitorTrackingMiddleware(object):
                 log.debug('Using existing visitor for IP %s / UA %s: %s' % (ip_address, user_agent, visitor.id))
             else:
                 # it's probably safe to assume that the visitor is brand new
+
+                # add tracking ID to model if specified in the URL
+                if request.GET.has_key('tid'):
+                    get = request.GET.copy()
+                    attrs['tid'] = get.pop('tid')[0]
+                    request.GET = get
+
                 visitor = Visitor(**attrs)
                 log.debug('Created a new visitor: %s' % attrs)
         except:
@@ -149,6 +156,8 @@ class VisitorTrackingMiddleware(object):
             visitor.save()
         except DatabaseError:
             log.error('There was a problem saving visitor information:\n%s\n\n%s' % (traceback.format_exc(), locals()))
+
+        request.visitor = visitor
 
 class VisitorCleanUpMiddleware:
     """Clean up old visitor tracking records in the database"""

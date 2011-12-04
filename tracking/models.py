@@ -42,6 +42,7 @@ class Visitor(models.Model):
     page_views = models.PositiveIntegerField(default=0)
     session_start = models.DateTimeField()
     last_update = models.DateTimeField()
+    tid = models.CharField(max_length=50, blank=True)
 
     objects = VisitorManager()
 
