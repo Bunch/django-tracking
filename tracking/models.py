@@ -126,3 +126,25 @@ class BannedIP(models.Model):
         ordering = ('ip_address',)
         verbose_name = _('Banned IP')
         verbose_name_plural = _('Banned IPs')
+
+class TrackingEvent(models.Model):
+    """
+    Used for user event tracking in JavaScript
+    """
+
+    name = models.CharField(max_length=50, help_text=_('Name identifying the event'))
+    visitor = models.ForeignKey(Visitor, help_text=_('The visitor which generated the event'))
+    time = models.DateTimeField(auto_now_add=True)
+    data = models.IntegerField(null=True, help_text=_('A name-specific identifier providing more information on the event'))
+
+    EVENT_CHOICES = (
+        ('click', 'Click'),
+        ('hover', 'Hover'),
+        ('scroll', 'Scroll'),
+    )
+    event = models.CharField(max_length=10, choices=EVENT_CHOICES, help_text=_('The type of UI event'))
+
+    class Meta:
+        # XXX An unfortunate side-effect of some
+        #     poor organization
+        db_table = 'visualprofile_trackingevent'
