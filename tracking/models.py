@@ -9,6 +9,7 @@ if HAS_GEOIP:
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib import admin
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
 from tracking import utils
@@ -34,7 +35,7 @@ class VisitorManager(models.Manager):
 
 class Visitor(models.Model):
     session_key = models.CharField(max_length=40)
-    ip_address = models.CharField(max_length=20)
+    ip_address = models.CharField(max_length=20, verbose_name='IP address')
     user = models.ForeignKey(User, null=True)
     user_agent = models.CharField(max_length=255)
     referrer = models.CharField(max_length=255)
@@ -42,7 +43,7 @@ class Visitor(models.Model):
     page_views = models.PositiveIntegerField(default=0)
     session_start = models.DateTimeField()
     last_update = models.DateTimeField()
-    tid = models.CharField(max_length=50, blank=True)
+    tid = models.CharField(max_length=50, blank=True, verbose_name='TID')
 
     objects = VisitorManager()
 
