@@ -142,6 +142,7 @@ class TrackingEvent(models.Model):
         ('click', 'Click'),
         ('hover', 'Hover'),
         ('scroll', 'Scroll'),
+        ('focus', 'Focus'),
     )
     event = models.CharField(max_length=10, choices=EVENT_CHOICES, help_text=_('The type of UI event'))
 
