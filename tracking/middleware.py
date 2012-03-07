@@ -158,6 +158,7 @@ class VisitorTrackingMiddleware(object):
             log.error('There was a problem saving visitor information:\n%s\n\n%s' % (traceback.format_exc(), locals()))
 
         request.visitor = visitor
+        request.session['visitor_id'] = visitor.pk
 
 class VisitorCleanUpMiddleware:
     """Clean up old visitor tracking records in the database"""

@@ -150,3 +150,13 @@ class TrackingEvent(models.Model):
         # XXX An unfortunate side-effect of some
         #     poor organization
         db_table = 'visualprofile_trackingevent'
+
+class PageVisit(models.Model):
+    """
+    Record page visits to all URLs
+    """
+
+    url = models.CharField(max_length=255)
+    query = models.CharField(max_length=255)
+    time = models.DateTimeField(auto_now_add=True)
+    visitor = models.ForeignKey(Visitor)
