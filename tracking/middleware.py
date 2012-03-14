@@ -120,9 +120,10 @@ class VisitorTrackingMiddleware(object):
                 # it's probably safe to assume that the visitor is brand new
 
                 # add tracking ID to model if specified in the URL
-                if request.GET.has_key('tid'):
+                tid = request.GET.get('tid') or request.GET.get('fb_source')
+                if tid:
                     get = request.GET.copy()
-                    attrs['tid'] = get.pop('tid')[0]
+                    attrs['tid'] = tid
                     request.GET = get
 
                 visitor = Visitor(**attrs)
