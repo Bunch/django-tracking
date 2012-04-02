@@ -103,31 +103,15 @@ class VisitorTrackingMiddleware(object):
         try:
             visitor = Visitor.objects.get(**attrs)
         except Visitor.DoesNotExist:
-            # see if there's a visitor with the same IP and user agent
-            # within the last 5 minutes
-            cutoff = now - timedelta(minutes=5)
-            visitors = Visitor.objects.filter(
-                ip_address=ip_address,
-                user_agent=user_agent,
-                last_update__gte=cutoff
-            )
+            # add tracking ID to model if specified in the URL
+            tid = request.GET.get('tid') or request.GET.get('fb_source')
+            if tid:
+                get = request.GET.copy()
+                attrs['tid'] = tid
+                request.GET = get
 
-            if len(visitors):
-                visitor = visitors[0]
-                visitor.session_key = session_key
-                log.debug('Using existing visitor for IP %s / UA %s: %s' % (ip_address, user_agent, visitor.id))
-            else:
-                # it's probably safe to assume that the visitor is brand new
-
-                # add tracking ID to model if specified in the URL
-                tid = request.GET.get('tid') or request.GET.get('fb_source')
-                if tid:
-                    get = request.GET.copy()
-                    attrs['tid'] = tid
-                    request.GET = get
-
-                visitor = Visitor(**attrs)
-                log.debug('Created a new visitor: %s' % attrs)
+            visitor = Visitor(**attrs)
+            log.debug('Created a new visitor: %s' % attrs)
         except:
             return
 
