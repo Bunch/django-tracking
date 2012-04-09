@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import re
 import traceback
@@ -124,10 +124,8 @@ class VisitorTrackingMiddleware(object):
         visitor.user = user
         visitor.user_agent = user_agent
 
-        # if the visitor record is new, or the visitor hasn't been here for
-        # at least an hour, update their referrer URL
-        one_hour_ago = now - timedelta(hours=1)
-        if not visitor.last_update or visitor.last_update <= one_hour_ago:
+        # if the visitor record is new, update their referrer URL
+        if not visitor.last_update:
             visitor.referrer = utils.u_clean(request.META.get('HTTP_REFERER', 'unknown')[:255])
 
             # reset the number of pages they've been to
