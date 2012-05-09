@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 import logging
 import re
 import traceback
@@ -9,6 +10,7 @@ from django.core.cache import cache
 from django.core.urlresolvers import reverse, NoReverseMatch
 from django.db.utils import DatabaseError
 from django.http import Http404
+from django.utils.http import cookie_date
 
 from tracking import utils
 from tracking.models import Visitor, UntrackedUserAgent, BannedIP
@@ -94,10 +96,19 @@ class VisitorTrackingMiddleware(object):
         # determine what time it is
         now = datetime.now()
 
-        attrs = {
+        # Attributes we use when creating a new user
+        new_attrs = {
             'session_key': session_key,
             'ip_address': ip_address
         }
+
+        # If we have a visitor_id cookie, use it
+        visitor_id = request.COOKIES.get('visitor_id')
+
+        if visitor_id:
+            attrs = {'id': visitor_id}
+        else:
+            attrs = new_attrs
 
         # for some reason, Visitor.objects.get_or_create was not working here
         try:
@@ -110,8 +121,8 @@ class VisitorTrackingMiddleware(object):
                 attrs['tid'] = tid
                 request.GET = get
 
-            visitor = Visitor(**attrs)
-            log.debug('Created a new visitor: %s' % attrs)
+            visitor = Visitor(**new_attrs)
+            log.debug('Created a new visitor: %s' % new_attrs)
         except:
             return
 
@@ -143,6 +154,30 @@ class VisitorTrackingMiddleware(object):
         request.visitor = visitor
         request.session['visitor_id'] = visitor.pk
 
+    def process_response(self, request, response):
+        try:
+            visitor_id = request.visitor.pk or request.session['visitor_id']
+        except:
+            visitor_id = None
+
+        if visitor_id:
+            # Set a cookie for the visitor ID using roughly
+            # the same parameters as the session cookie
+            max_age = request.session.get_expiry_age()
+
+            response.set_cookie(
+                'visitor_id',
+                visitor_id,
+                max_age=max_age,
+                expires=cookie_date(time.time() + max_age),
+                domain=settings.SESSION_COOKIE_DOMAIN,
+                path=settings.SESSION_COOKIE_PATH,
+                secure=False,
+                httponly=False,
+            )
+
+        return response
+
 class VisitorCleanUpMiddleware:
     """Clean up old visitor tracking records in the database"""
 
@@ -151,7 +186,7 @@ class VisitorCleanUpMiddleware:
 
         if str(timeout).isdigit():
             log.debug('Cleaning up visitors older than %s hours' % timeout)
-            timeout = datetime.now() - timedelta(hours=int(timeout))
+            timeout = datetime.now() - datetime.timedelta(hours=int(timeout))
             Visitor.objects.filter(last_update__lte=timeout).delete()
 
 class BannedIPMiddleware:
