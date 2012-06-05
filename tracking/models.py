@@ -148,11 +148,6 @@ class TrackingEvent(models.Model):
     )
     event = models.CharField(max_length=10, choices=EVENT_CHOICES, help_text=_('The type of UI event'))
 
-    class Meta:
-        # XXX An unfortunate side-effect of some
-        #     poor organization
-        db_table = 'visualprofile_trackingevent'
-
 class PageVisit(models.Model):
     """
     Record page visits to all URLs
