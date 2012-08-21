@@ -80,6 +80,8 @@ class VisitorTrackingMiddleware(object):
                 return
 
         if hasattr(request, 'session'):
+            if not request.session.session_key:
+                request.session.save()
             # use the current session key if we can
             session_key = request.session.session_key
         else:
