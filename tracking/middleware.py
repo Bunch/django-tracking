@@ -69,7 +69,7 @@ class VisitorTrackingMiddleware(object):
         untracked = cache.get(ua_key)
         if untracked is None:
             log.info('Updating untracked user agent cache')
-            untracked = UntrackedUserAgent.objects.all()
+            untracked = list(UntrackedUserAgent.objects.all())
             cache.set(ua_key, untracked, 3600)
 
         # see if the user agent is not supposed to be tracked
