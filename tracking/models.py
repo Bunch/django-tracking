@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import logging
+import threading
 import traceback
 
 from django.contrib.gis.utils import HAS_GEOIP
@@ -18,7 +19,7 @@ USE_GEOIP = getattr(settings, 'TRACKING_USE_GEOIP', False)
 CACHE_TYPE = getattr(settings, 'GEOIP_CACHE_TYPE', 4)
 
 log = logging.getLogger('tracking.models')
-gip = None
+geo = threading.local()
 
 class VisitorManager(models.Manager):
     def active(self, timeout=None):
@@ -70,7 +71,7 @@ class Visitor(models.Model):
         """
         Attempts to retrieve MaxMind GeoIP data based upon the visitor's IP
         """
-        global gip
+        global geo
 
         if not HAS_GEOIP or not USE_GEOIP:
             # go no further when we don't need to
@@ -80,10 +81,10 @@ class Visitor(models.Model):
         if not hasattr(self, '_geoip_data'):
             self._geoip_data = None
             try:
-                if not gip:
-                    gip = GeoIP(cache=CACHE_TYPE)
+                if not getattr(geo, 'GeoIP', None):
+                    geo.GeoIP = GeoIP(cache=CACHE_TYPE)
 
-                self._geoip_data = gip.city(self.ip_address)
+                self._geoip_data = geo.GeoIP.city(self.ip_address)
             except GeoIPException:
                 # don't even bother...
                 log.error('Error getting GeoIP data for IP "%s": %s' % (self.ip_address, traceback.format_exc()))
