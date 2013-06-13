@@ -141,7 +141,7 @@ class TrackingEvent(models.Model):
 
     name = models.CharField(max_length=50, help_text=_('Name identifying the event'))
     visitor = models.ForeignKey(Visitor, help_text=_('The visitor which generated the event'))
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(auto_now_add=True, db_index=True)
     data = models.BigIntegerField(null=True, help_text=_('A name-specific identifier providing more information on the event'))
 
     EVENT_CHOICES = (
@@ -161,5 +161,5 @@ class PageVisit(models.Model):
 
     url = models.CharField(max_length=255)
     query = models.CharField(max_length=255)
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(auto_now_add=True, db_index=True)
     visitor = models.ForeignKey(Visitor)
