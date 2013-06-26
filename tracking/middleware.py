@@ -113,10 +113,8 @@ class VisitorTrackingMiddleware(object):
             attrs = new_attrs
 
         # for some reason, Visitor.objects.get_or_create was not working here
-        new_visitor = True
         try:
             visitor = Visitor.objects.get(**attrs)
-            new_visitor = False
         except Visitor.DoesNotExist:
             # add tracking ID to model if specified in the URL
             tid = request.GET.get('tid') or request.GET.get('fb_source')
@@ -151,12 +149,7 @@ class VisitorTrackingMiddleware(object):
         visitor.page_views += 1
         visitor.last_update = now
         try:
-            # This is a minor optimization since we already know
-            # whether we need to insert or update
-            if new_visitor:
-                visitor.save(force_insert=True)
-            else:
-                visitor.save(force_update=True)
+            visitor.save()
         except DatabaseError:
             log.error('There was a problem saving visitor information:\n%s\n\n%s' % (traceback.format_exc(), locals()))
 
