@@ -157,10 +157,12 @@ class VisitorTrackingMiddleware(object):
         request.session['visitor_id'] = visitor.pk
 
     def process_response(self, request, response):
-        if hasattr(request, 'visitor'):
+        if 'visitor_id' in request.session:
+            visitor_id = request.session['visitor_id']
+        elif hasattr(request, 'visitor'):
             visitor_id = request.visitor.pk
         else:
-            visitor_id = request.session.get('visitor_id', None)
+            visitor_id = None
 
         if visitor_id:
             # Set a cookie for the visitor ID using roughly
