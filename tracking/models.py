@@ -43,7 +43,7 @@ class Visitor(models.Model):
     referrer = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
     page_views = models.PositiveIntegerField(default=0)
-    session_start = models.DateTimeField()
+    session_start = models.DateTimeField(db_index=True)
     last_update = models.DateTimeField()
     tid = models.CharField(max_length=50, blank=True, verbose_name='TID')
 
